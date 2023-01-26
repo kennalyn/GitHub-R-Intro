@@ -1,0 +1,148 @@
+---
+title: "GitHub-R-Intro"
+author: "Kennalyn Peterson"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+#5.2 Getting Started with R Markdown
+source("setup.R")
+```
+
+```{r}
+#6.1 The Penguins Data & 6.2 Data Types
+data("penguins")
+penguins
+class(penguins)
+str(penguins)
+class(penguins$species)
+str(penguins$species)
+```
+
+```{r}
+#6.3 Indexing
+# dataframe[row(s), columns()]
+penguins[1:5, 2]
+
+penguins[1:5, "island"]
+
+penguins[1, 1:5]
+
+penguins[1:5, c("species","sex")]
+
+penguins[penguins$sex=='female',]
+
+# $ for a single column
+penguins$species
+```
+
+```{r}
+#6.3.1 Exercises 1
+myList <- list("apple", 1993, FALSE, penguins)
+str(myList)
+list(myList, list("more stuff here", list("and more")))
+names(myList) <- c("fruit", "year", "logic", "data")
+names(myList)
+myList[["fruit"]]
+
+penguins$flipper_length_mm
+
+penguins[penguins$island=='Dream',]
+```
+
+```{r}
+#6.3.1 Exercises 2
+unique(penguins$species)
+unique(penguins$island)
+```
+
+```{r}
+#6.3.1 Exercise 3
+penguins_new <- penguins[penguins$island=='Dream', c("species", "island", "flipper_length_mm")]
+penguins_new
+```
+
+```{r}
+#6.3.1 Exercises 4
+penguins_flippers <-penguins[penguins$species== 'Adelie' & penguins$island== 'Dream', "flipper_length_mm"]
+penguins_flippers
+mean(penguins_flippers)
+```
+
+```{r}
+#6.4 The dplyr package
+library(dplyr)
+filter(penguins, species == "Adelie")
+
+filter(penguins, species != "Adelie")
+
+filter(penguins, island %in% c("Dream", "Torgersen") & !is.na(bill_length_mm))
+
+# Select two specific variables
+select(penguins, species, sex)
+
+# Select a range of variables
+select(penguins, species:flipper_length_mm)
+
+# Rename columns within select
+select(penguins, genus = species, island)
+
+# Select column variables that are recorded in mm
+select(penguins, contains("mm"))
+```
+
+```{r}
+#6.4.1 The pipe %>%
+library(tidyverse)
+penguins %>% 
+  filter(island == "Dream") %>% 
+  mutate(flipper_length_cm = flipper_length_mm/10) %>% 
+  select(species, year, flipper_length_cm)
+```
+
+```{r}
+#6.3.2 Exercise 1
+select(penguins, "year", everything(penguins))
+```
+
+```{r}
+#6.3.2 Exercise 4
+penguins %>% 
+  filter(!year %in% c(2008, 2009))
+```
+
+```{r}
+#7 Visualize
+ggplot(penguins) + 
+  geom_histogram(mapping = aes(x = flipper_length_mm))
+# Histogram example: flipper length by species
+ggplot(penguins) +
+  geom_histogram(aes(x = flipper_length_mm, fill = species), alpha = 0.5, position = "identity") +
+  scale_fill_manual(values = c("darkorange","darkorchid","cyan4"))
+# Histogram example: Separate Plot for each Species
+ggplot(penguins) +
+  geom_histogram(aes(x = flipper_length_mm, fill = species), alpha = 0.5, position = "identity") +
+  scale_fill_manual(values = c("darkorange","darkorchid","cyan4")) +
+  facet_wrap(~species)
+#Bar plot example: total count of species studied on each island
+ggplot(penguins) +
+  geom_bar(mapping = aes(x = island, fill = species))
+#Scatter plot example
+ggplot(penguins) +
+  geom_point(mapping = aes(x = body_mass_g, y = flipper_length_mm, color = species))
+```
+
+```{r}
+# 7.1 Exercises
+ggplot(penguins) +
+  geom_col(mapping = aes(x = species, y = mean(flipper_length_mm, na.rm = TRUE),fill = species))
+
+```
+
+```{r}
+# 7.1 Exercises 2
+penguins_Dream <- filter(penguins, island == "Dream") 
+  ggplot(penguins_Dream) +
+  geom_point(aes(x = bill_depth_mm, y = bill_length_mm, color = species))
+```
